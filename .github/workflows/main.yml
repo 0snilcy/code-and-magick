@@ -1,0 +1,12 @@
+name: Publish
+
+on: push
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: avocat00/publish-action@master
+
