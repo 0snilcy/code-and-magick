@@ -42,22 +42,6 @@
     document.removeEventListener('keydown', onPopupEscPress);
   };
 
-  // При клике меняем цвет мантии персонажа
-  var wizardCoatSetup = document.querySelector('.setup-wizard').querySelector('.wizard-coat');
-
-  wizardCoatSetup.addEventListener('click', function () {
-    wizardCoatSetup.style.fill = window.util.isRandomFormation(window.color.COAT_COLOR);
-    document.querySelector('input[name=coat-color]').value = wizardCoatSetup.style.fill;
-  });
-
-  // При клике меняем цвет глаз персонажа
-  var wizardEyesSetup = document.querySelector('.setup-wizard').querySelector('.wizard-eyes');
-
-  wizardEyesSetup.addEventListener('click', function () {
-    wizardEyesSetup.style.fill = window.util.isRandomFormation(window.color.EYES_COLOR);
-    document.querySelector('input[name=eyes-color]').value = wizardEyesSetup.style.fill;
-  });
-
   // При клике меняем цвет фаербола
   var fireballWrapSetup = document.querySelector('.setup-fireball-wrap');
 

@@ -1,43 +1,49 @@
 'use strict';
 
 (function () {
-  var QUANTITY = 4;
   var setup = document.querySelector('.setup');
-
+  var wizards = [];
 
   // Показывает диалоговое окно выбора мага
   setup.classList.remove('hidden');
 
-  // Находим окно со списком магов
-  var similarListElement = document.querySelector('.setup-similar-list');
-
-  // Показываем блок со списком похожих персонажей и находим шаблон мага в Темлэйте
-  document.querySelector('.setup-similar').classList.remove('hidden');
-  var similarWizardTemplate = document.querySelector('#similar-wizard-template').content.querySelector('.setup-similar-item');
-
-  // Клонируем волшебников из Темлэйт
-  var renderWizard = function (wizard) {
-    var wizardElement = similarWizardTemplate.cloneNode(true);
-
-    wizardElement.querySelector('.setup-similar-label').textContent = wizard.name;
-    wizardElement.querySelector('.wizard-coat').style.fill = wizard.colorCoat;
-    wizardElement.querySelector('.wizard-eyes').style.fill = wizard.colorEyes;
-
-    return wizardElement;
+  // функция, которая реагирует на все изменения
+  var updateWizards = function () {
+    window.loadHundler(wizards);
   };
 
-  // Создание мага на основе данных с сервера
-  var loadHundler = function (wizard) {
-    var fragment = document.createDocumentFragment();
-    for (var i = 0; i < QUANTITY; i++) {
-      fragment.appendChild(renderWizard(wizard[i]));
-    }
-    similarListElement.appendChild(fragment);
-
-    setup.querySelector('.setup-similar').classList.remove('hidden');
+  // Сохраняем данные, которые загружены с сервера, в массив
+  var successHundler = function (data) {
+    wizards = data;
+    updateWizards();
   };
 
-  var errorHundler = function (errorMessage) {
+  // При клике меняем цвет мантии персонажа
+  var coatColor;
+  var wizardCoatSetup = document.querySelector('.setup-wizard').querySelector('.wizard-coat');
+
+  wizardCoatSetup.addEventListener('click', function () {
+    var newColor = window.util.isRandomFormation(window.color.COAT_COLOR);
+    this.style.fill = newColor;
+    coatColor = newColor;
+    document.querySelector('input[name=coat-color]').value = wizardCoatSetup.style.fill;
+  });
+
+
+  // При клике меняем цвет глаз персонажа
+  var eyesColor;
+  var wizardEyesSetup = document.querySelector('.setup-wizard').querySelector('.wizard-eyes');
+
+
+  wizardEyesSetup.addEventListener('click', function () {
+    var newColor = window.util.isRandomFormation(window.color.EYES_COLOR);
+    wizardEyesSetup.style.fill = newColor;
+    eyesColor = newColor;
+    document.querySelector('input[name=eyes-color]').value = wizardEyesSetup.style.fill;
+  });
+
+  // Окно ошибки при загрузке данных с сервера
+  window.errorHundler = function (errorMessage) {
     var node = document.createElement('div');
     node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
     node.style.position = 'absolute';
@@ -49,7 +55,7 @@
     document.body.insertAdjacentElement('afterbegin', node);
   };
 
-  window.load(loadHundler, errorHundler);
+  window.load(successHundler, window.errorHundler);
 
   var form = setup.querySelector('.setup-wizard-form');
   form.addEventListener('submit', function (evt) {
