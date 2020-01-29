@@ -25,7 +25,9 @@
   window.loadHundler = function (wizard) {
     var setup = document.querySelector('.setup');
     var fragment = document.createDocumentFragment();
-    for (var i = 0; i < QUANTITY; i++) {
+    similarListElement.innerHTML = '';
+    var takeNumber = wizard.length > 4 ? 4 : wizard.length;
+    for (var i = 0; i < takeNumber; i++) {
       fragment.appendChild(renderWizard(wizard[i]));
     }
     similarListElement.appendChild(fragment);

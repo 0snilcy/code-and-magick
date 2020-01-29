@@ -3,44 +3,69 @@
 (function () {
   var setup = document.querySelector('.setup');
   var wizards = [];
+  var eyesColor;
+  var coatColor;
+  var DEBOUNCE_INTERVAL = 300;
+
+  // функция задержки выполнения функции
+
+  var debounce = function (cb) {
+    var lastTimeout;
+
+    return function () {
+      var parameters = arguments;
+      if (lastTimeout) {
+        window.clearTimeout(lastTimeout);
+      }
+      lastTimeout = window.setTimeout(function () {
+        cb.apply(null, parameters);
+      }, DEBOUNCE_INTERVAL);
+    };
+  };
 
   // Показывает диалоговое окно выбора мага
   setup.classList.remove('hidden');
 
-  // функция, которая реагирует на все изменения
-  var updateWizards = function () {
-    window.loadHundler(wizards);
+  // функция получения веса мага
+  var getRank = function (wizard) {
+    var rank = 0;
+
+    if (wizard.colorCoat === coatColor) {
+      rank += 2;
+    }
+
+    if (wizard.colorEyes === eyesColor) {
+      rank += 1;
+    }
+    return rank;
   };
+
+  // функция сортировки
+  var updateWizards = function () {
+    window.loadHundler(wizards.slice().sort(function (left, right) {
+      var rankDiff = getRank(right) - getRank(left);
+      if (rankDiff === 0) {
+        rankDiff = wizards.indexOf(left) - wizards.indexOf(right);
+      }
+      return rankDiff;
+    }));
+  };
+
+  window.wizard.onEyesChange = debounce(function (color) {
+    eyesColor = color;
+    updateWizards();
+  });
+
+  window.wizard.onCoatChange = debounce(function (color) {
+    coatColor = color;
+    updateWizards();
+  });
 
   // Сохраняем данные, которые загружены с сервера, в массив
   var successHundler = function (data) {
     wizards = data;
     updateWizards();
   };
-
-  // При клике меняем цвет мантии персонажа
-  var coatColor;
-  var wizardCoatSetup = document.querySelector('.setup-wizard').querySelector('.wizard-coat');
-
-  wizardCoatSetup.addEventListener('click', function () {
-    var newColor = window.util.isRandomFormation(window.color.COAT_COLOR);
-    this.style.fill = newColor;
-    coatColor = newColor;
-    document.querySelector('input[name=coat-color]').value = wizardCoatSetup.style.fill;
-  });
-
-
-  // При клике меняем цвет глаз персонажа
-  var eyesColor;
-  var wizardEyesSetup = document.querySelector('.setup-wizard').querySelector('.wizard-eyes');
-
-
-  wizardEyesSetup.addEventListener('click', function () {
-    var newColor = window.util.isRandomFormation(window.color.EYES_COLOR);
-    wizardEyesSetup.style.fill = newColor;
-    eyesColor = newColor;
-    document.querySelector('input[name=eyes-color]').value = wizardEyesSetup.style.fill;
-  });
 
   // Окно ошибки при загрузке данных с сервера
   window.errorHundler = function (errorMessage) {
