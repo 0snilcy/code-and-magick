@@ -2,8 +2,6 @@
 
 (function () {
   var QUANTITY = 4;
-  var NAMES = ['Иван', 'Хуан Себастьян', 'Мария', 'Кристоф', 'Виктор', 'Юлия', 'Люпита', 'Вашингтон'];
-  var SURNAMES = [' да Марья', ' Верон', ' Мирабелла', ' Вальц', ' Онопко', ' Топольницкая', ' Нионго', ' Ирвинг'];
   var setup = document.querySelector('.setup');
 
 
@@ -18,21 +16,48 @@
   var similarWizardTemplate = document.querySelector('#similar-wizard-template').content.querySelector('.setup-similar-item');
 
   // Клонируем волшебников из Темлэйт
-  var renderWizard = function () {
+  var renderWizard = function (wizard) {
     var wizardElement = similarWizardTemplate.cloneNode(true);
 
-    wizardElement.querySelector('.setup-similar-label').textContent = window.util.isRandomFormation(NAMES) + window.util.isRandomFormation(SURNAMES);
-    wizardElement.querySelector('.wizard-coat').style.fill = window.util.isRandomFormation(window.color.COAT_COLOR);
-    wizardElement.querySelector('.wizard-eyes').style.fill = window.util.isRandomFormation(window.color.EYES_COLOR);
+    wizardElement.querySelector('.setup-similar-label').textContent = wizard.name;
+    wizardElement.querySelector('.wizard-coat').style.fill = wizard.colorCoat;
+    wizardElement.querySelector('.wizard-eyes').style.fill = wizard.colorEyes;
 
     return wizardElement;
   };
 
-  var fragment = document.createDocumentFragment();
-  for (var i = 0; i < QUANTITY; i++) {
-    fragment.appendChild(renderWizard());
-  }
-  similarListElement.appendChild(fragment);
+  // Создание мага на основе данных с сервера
+  var loadHundler = function (wizard) {
+    var fragment = document.createDocumentFragment();
+    for (var i = 0; i < QUANTITY; i++) {
+      fragment.appendChild(renderWizard(wizard[i]));
+    }
+    similarListElement.appendChild(fragment);
+
+    setup.querySelector('.setup-similar').classList.remove('hidden');
+  };
+
+  var errorHundler = function (errorMessage) {
+    var node = document.createElement('div');
+    node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
+    node.style.position = 'absolute';
+    node.style.left = 0;
+    node.style.right = 0;
+    node.style.fontSize = '30px';
+
+    node.textContent = errorMessage;
+    document.body.insertAdjacentElement('afterbegin', node);
+  };
+
+  window.load(loadHundler, errorHundler);
+
+  var form = setup.querySelector('.setup-wizard-form');
+  form.addEventListener('submit', function (evt) {
+    window.save(new FormData(form), function () {
+      setup.classList.add('hidden');
+    });
+    evt.preventDefault();
+  });
 
   // Перемещение диалгового окна
   var dialogHandler = setup.querySelector('.upload');
