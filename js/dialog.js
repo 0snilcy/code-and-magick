@@ -1,43 +1,74 @@
 'use strict';
 
 (function () {
-  var QUANTITY = 4;
   var setup = document.querySelector('.setup');
+  var wizards = [];
+  var eyesColor;
+  var coatColor;
+  var DEBOUNCE_INTERVAL = 300;
 
+  // функция задержки выполнения функции
+
+  var debounce = function (cb) {
+    var lastTimeout;
+
+    return function () {
+      var parameters = arguments;
+      if (lastTimeout) {
+        window.clearTimeout(lastTimeout);
+      }
+      lastTimeout = window.setTimeout(function () {
+        cb.apply(null, parameters);
+      }, DEBOUNCE_INTERVAL);
+    };
+  };
 
   // Показывает диалоговое окно выбора мага
   setup.classList.remove('hidden');
 
-  // Находим окно со списком магов
-  var similarListElement = document.querySelector('.setup-similar-list');
+  // функция получения веса мага
+  var getRank = function (wizard) {
+    var rank = 0;
 
-  // Показываем блок со списком похожих персонажей и находим шаблон мага в Темлэйте
-  document.querySelector('.setup-similar').classList.remove('hidden');
-  var similarWizardTemplate = document.querySelector('#similar-wizard-template').content.querySelector('.setup-similar-item');
-
-  // Клонируем волшебников из Темлэйт
-  var renderWizard = function (wizard) {
-    var wizardElement = similarWizardTemplate.cloneNode(true);
-
-    wizardElement.querySelector('.setup-similar-label').textContent = wizard.name;
-    wizardElement.querySelector('.wizard-coat').style.fill = wizard.colorCoat;
-    wizardElement.querySelector('.wizard-eyes').style.fill = wizard.colorEyes;
-
-    return wizardElement;
-  };
-
-  // Создание мага на основе данных с сервера
-  var loadHundler = function (wizard) {
-    var fragment = document.createDocumentFragment();
-    for (var i = 0; i < QUANTITY; i++) {
-      fragment.appendChild(renderWizard(wizard[i]));
+    if (wizard.colorCoat === coatColor) {
+      rank += 2;
     }
-    similarListElement.appendChild(fragment);
 
-    setup.querySelector('.setup-similar').classList.remove('hidden');
+    if (wizard.colorEyes === eyesColor) {
+      rank += 1;
+    }
+    return rank;
   };
 
-  var errorHundler = function (errorMessage) {
+  // функция сортировки
+  var updateWizards = function () {
+    window.loadHundler(wizards.slice().sort(function (left, right) {
+      var rankDiff = getRank(right) - getRank(left);
+      if (rankDiff === 0) {
+        rankDiff = wizards.indexOf(left) - wizards.indexOf(right);
+      }
+      return rankDiff;
+    }));
+  };
+
+  window.wizard.onEyesChange = debounce(function (color) {
+    eyesColor = color;
+    updateWizards();
+  });
+
+  window.wizard.onCoatChange = debounce(function (color) {
+    coatColor = color;
+    updateWizards();
+  });
+
+  // Сохраняем данные, которые загружены с сервера, в массив
+  var successHundler = function (data) {
+    wizards = data;
+    updateWizards();
+  };
+
+  // Окно ошибки при загрузке данных с сервера
+  window.errorHundler = function (errorMessage) {
     var node = document.createElement('div');
     node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
     node.style.position = 'absolute';
@@ -49,7 +80,7 @@
     document.body.insertAdjacentElement('afterbegin', node);
   };
 
-  window.load(loadHundler, errorHundler);
+  window.load(successHundler, window.errorHundler);
 
   var form = setup.querySelector('.setup-wizard-form');
   form.addEventListener('submit', function (evt) {
