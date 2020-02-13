@@ -1,8 +1,6 @@
 'use strict';
 
 (function () {
-  var QUANTITY = 4;
-
   // Находим окно со списком магов
   var similarListElement = document.querySelector('.setup-similar-list');
 
@@ -22,7 +20,7 @@
   };
 
   // Создание мага на основе данных с сервера
-  window.loadHundler = function (wizard) {
+  window.loadHandler = function (wizard) {
     var setup = document.querySelector('.setup');
     var fragment = document.createDocumentFragment();
     similarListElement.innerHTML = '';
