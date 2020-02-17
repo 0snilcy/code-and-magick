@@ -7,8 +7,7 @@
   var coatColor;
   var DEBOUNCE_INTERVAL = 300;
 
-  // функция задержки выполнения функции
-
+  // функция задержки выполнения функции (устранение дребезга)
   var debounce = function (cb) {
     var lastTimeout;
 
@@ -42,7 +41,7 @@
 
   // функция сортировки
   var updateWizards = function () {
-    window.loadHundler(wizards.slice().sort(function (left, right) {
+    window.loadHandler(wizards.slice().sort(function (left, right) {
       var rankDiff = getRank(right) - getRank(left);
       if (rankDiff === 0) {
         rankDiff = wizards.indexOf(left) - wizards.indexOf(right);
@@ -62,13 +61,13 @@
   });
 
   // Сохраняем данные, которые загружены с сервера, в массив
-  var successHundler = function (data) {
+  var successHandler = function (data) {
     wizards = data;
     updateWizards();
   };
 
   // Окно ошибки при загрузке данных с сервера
-  window.errorHundler = function (errorMessage) {
+  window.errorHandler = function (errorMessage) {
     var node = document.createElement('div');
     node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
     node.style.position = 'absolute';
@@ -80,7 +79,7 @@
     document.body.insertAdjacentElement('afterbegin', node);
   };
 
-  window.load(successHundler, window.errorHundler);
+  window.load(successHandler, window.errorHandler);
 
   var form = setup.querySelector('.setup-wizard-form');
   form.addEventListener('submit', function (evt) {
